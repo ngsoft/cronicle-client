@@ -1,5 +1,5 @@
 {
-  "name": "ngsoft/cronicle-client",
+  "name": "ngsoft/cronicle-tasks-client",
   "description": "PHP HTTP client for the Cronicle JSON REST API, with typed DTOs and OpenAPI schema",
   "type": "library",
   "keywords": [
