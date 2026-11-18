@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NGSOFT\Cronicle\Exception;
 
 /**
@@ -7,16 +9,12 @@ namespace NGSOFT\Cronicle\Exception;
  */
 class CronicleException extends \RuntimeException
 {
-    /** @var null|int|string */
-    private $apiCode;
-
     /**
      * @param null|int|string $apiCode
      */
-    public function __construct(string $message, $apiCode = null, ?\Throwable $previous = null)
+    public function __construct(string $message, private $apiCode = null, ?\Throwable $previous = null)
     {
-        $this->apiCode = $apiCode;
-        parent::__construct($message, is_int($apiCode) ? $apiCode : 0, $previous);
+        parent::__construct($message, is_int($this->apiCode) ? $this->apiCode : 0, $previous);
     }
 
     /**

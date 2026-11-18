@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NGSOFT\Cronicle\Dto;
 
 /**
@@ -15,10 +17,8 @@ class ListMeta extends AbstractDto
 
     /**
      * @param mixed $value
-     *
-     * @return mixed
      */
-    protected function cast(string $key, $value)
+    protected function cast(string $key, $value): int|string
     {
         if ('type' === $key)
         {

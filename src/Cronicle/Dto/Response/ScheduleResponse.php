@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NGSOFT\Cronicle\Dto\Response;
 
 use NGSOFT\Cronicle\Dto\Event;
@@ -25,7 +27,7 @@ class ScheduleResponse extends ApiResponse
         return match ($key)
         {
             'rows'  => is_array($value)
-                ? array_map(static fn ($row) => Event::fromArray(is_array($row) ? $row : []), $value)
+                ? array_map(static fn ($row): Event => Event::fromArray(is_array($row) ? $row : []), $value)
                 : null,
             'list'  => is_array($value) ? ListMeta::fromArray($value) : $value,
             default => parent::cast($key, $value),

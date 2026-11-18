@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NGSOFT\Cronicle\Dto;
 
 /**
@@ -36,7 +38,7 @@ class EventTiming extends AbstractDto
     {
         if (is_array($value))
         {
-            return array_map('intval', $value);
+            return array_map(intval(...), $value);
         }
 
         return $value;

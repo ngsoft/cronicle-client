@@ -4,9 +4,13 @@ namespace NGSOFT\Cronicle\Dto;
 
 /**
  * Base hydratable / serializable DTO for Cronicle API payloads.
+ *
+ * @phpstan-consistent-constructor
  */
 abstract class AbstractDto implements \JsonSerializable
 {
+    public function __construct() {}
+
     /**
      * @param array<string, mixed> $data
      */
@@ -56,6 +60,9 @@ abstract class AbstractDto implements \JsonSerializable
         return $result;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return $this->toArray();
@@ -68,7 +75,7 @@ abstract class AbstractDto implements \JsonSerializable
     {
         foreach ($data as $key => $value)
         {
-            if ( ! is_string($key) || ! property_exists($this, $key) || null === $value)
+            if ( ! property_exists($this, $key) || null === $value)
             {
                 continue;
             }

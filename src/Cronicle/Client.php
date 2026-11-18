@@ -14,6 +14,9 @@ use NGSOFT\Cronicle\Dto\Response\MasterStateResponse;
 use NGSOFT\Cronicle\Dto\Response\RunEventResponse;
 use NGSOFT\Cronicle\Dto\Response\ScheduleResponse;
 use NGSOFT\Cronicle\Exception\CronicleException;
+use Symfony\Component\Dotenv\Dotenv;
+
+require_once dirname(__DIR__, 2) . '/lib/functions.php';
 
 /**
  * HTTP client for the Cronicle JSON REST API.
@@ -22,15 +25,11 @@ use NGSOFT\Cronicle\Exception\CronicleException;
  */
 class Client
 {
-    private string $baseUrl;
-    private string $apiKey;
-    private int $timeout;
+    private readonly string $baseUrl;
 
-    public function __construct(string $baseUrl, string $apiKey, int $timeout = 30)
+    public function __construct(string $baseUrl, private readonly string $apiKey, private readonly int $timeout = 30)
     {
         $this->baseUrl = rtrim($baseUrl, '/');
-        $this->apiKey  = $apiKey;
-        $this->timeout = $timeout;
     }
 
     /**
@@ -40,11 +39,14 @@ class Client
     {
         if ( ! isset($_ENV['SYMFONY_DOTENV_VARS']))
         {
-            if ( ! function_exists('load_env'))
+            if (class_exists(Dotenv::class))
             {
-                require_once dirname(__DIR__, 2) . '/lib/init.php';
+                if ( ! function_exists('load_env'))
+                {
+                    require_once dirname(__DIR__, 2) . '/lib/init.php';
+                }
+                load_env();
             }
-            load_env();
         }
         return new self(
             (string) env_get('CRONICLE_BASE_URL', '', false),
@@ -320,13 +322,12 @@ class Client
             $this->timeout
         );
 
-        if ( ! $response || ! $response->success)
+        if ( ! $response->success)
         {
-            $status = $response->status ?? 0;
             throw new CronicleException(sprintf(
                 'HTTP request to %s failed (HTTP %s)',
                 $action,
-                $status
+                $response->status ?? 0
             ));
         }
 
@@ -373,6 +374,6 @@ class Client
      */
     private function filterNull(array $data): array
     {
-        return array_filter($data, static fn ($value) => null !== $value);
+        return array_filter($data, static fn ($value): bool => null !== $value);
     }
 }

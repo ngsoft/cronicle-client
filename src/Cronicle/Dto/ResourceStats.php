@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NGSOFT\Cronicle\Dto;
 
 /**
@@ -25,10 +27,8 @@ class ResourceStats extends AbstractDto
 
     /**
      * @param mixed $value
-     *
-     * @return mixed
      */
-    protected function cast(string $key, $value)
+    protected function cast(string $key, $value): float|int
     {
         if ('count' === $key)
         {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NGSOFT\Cronicle\Dto\Response;
 
 use NGSOFT\Cronicle\Dto\Job;

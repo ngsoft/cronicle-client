@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NGSOFT\Cronicle\Dto\Response;
 
 use NGSOFT\Cronicle\Dto\Event;
@@ -30,7 +32,7 @@ class EventResponse extends ApiResponse
             'event' => is_array($value) ? Event::fromArray($value) : $value,
             'queue' => (int) $value,
             'jobs'  => is_array($value)
-                ? array_map(static fn ($row) => Job::fromArray(is_array($row) ? $row : []), $value)
+                ? array_map(static fn ($row): Job => Job::fromArray(is_array($row) ? $row : []), $value)
                 : null,
             default => parent::cast($key, $value),
         };

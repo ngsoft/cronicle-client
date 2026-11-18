@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NGSOFT\Cronicle\Dto\Response;
 
 /**
@@ -22,7 +24,7 @@ class RunEventResponse extends ApiResponse
     {
         return match ($key)
         {
-            'ids'   => is_array($value) ? array_map('strval', $value) : null,
+            'ids'   => is_array($value) ? array_map(strval(...), $value) : null,
             'queue' => (int) $value,
             default => parent::cast($key, $value),
         };

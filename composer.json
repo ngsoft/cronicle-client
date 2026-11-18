@@ -33,7 +33,6 @@
     "platform-check": false
   },
   "autoload": {
-    "files": ["lib/functions.php"],
     "psr-4": {
       "NGSOFT\\": "src/"
     }
@@ -42,20 +41,44 @@
     "php": ">=8.2",
     "ext-curl": "*",
     "ext-json": "*",
-    "ext-mbstring": "*",
-    "symfony/dotenv": "^7"
+    "ext-mbstring": "*"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^2|^3",
-    "symfony/var-dumper": "^7"
+    "phpstan/phpstan": "^2.0",
+    "rector/rector": "^2.0",
+    "symfony/dotenv": "^7|^8",
+    "symfony/var-dumper": "^7|^8"
   },
   "suggest": {
     "symfony/var-dumper": "Needed by examples/client-test.php (dump())"
   },
   "scripts": {
+    "cs": [
+      "Composer\\Config::disableProcessTimeout",
+      "php-cs-fixer fix --dry-run --diff"
+    ],
     "cs:fix": [
       "Composer\\Config::disableProcessTimeout",
-      "php8.2 vendor/bin/php-cs-fixer fix src"
+      "php-cs-fixer fix"
+    ],
+    "phpstan": [
+      "Composer\\Config::disableProcessTimeout",
+      "phpstan analyse"
+    ],
+    "rector": [
+      "Composer\\Config::disableProcessTimeout",
+      "rector process --dry-run"
+    ],
+    "rector:fix": [
+      "Composer\\Config::disableProcessTimeout",
+      "rector process",
+      "@cs:fix"
+    ],
+    "qa": [
+      "@rector",
+      "@cs",
+      "@phpstan"
     ]
   }
 }

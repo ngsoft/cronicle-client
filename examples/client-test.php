@@ -1,8 +1,8 @@
 <?php
 
-require_once dirname(__DIR__) . '/vendor/autoload.php';
-
 use NGSOFT\Cronicle\Client;
+
+require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 $client = Client::fromEnv();
 

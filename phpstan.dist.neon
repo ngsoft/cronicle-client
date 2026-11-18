@@ -1,0 +1,13 @@
+# Existing technical debt is frozen in the baseline; the high level applies to new code.
+# Regenerate after fixing legacy issues with `vendor/bin/phpstan analyse --generate-baseline`.
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 8
+    paths:
+        - src
+    # Discover symbols from bundled helpers (CurlHandler, env_get, load_env).
+    scanFiles:
+        - lib/libs-no-sql-php82.php
+        - lib/init.php

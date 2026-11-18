@@ -1,4 +1,4 @@
-# ngsoft/cronicle-client
+# ngsoft/cronicle-tasks-client
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PHP Version](https://img.shields.io/badge/PHP-%3E%3D8.2-777BB4.svg)](composer.json)
@@ -7,7 +7,7 @@ Client PHP pour l’[API JSON REST Cronicle](https://github.com/jhuckaby/Cronicl
 
 Il encapsule les appels HTTP via `CurlHandler`, hydrate des DTOs typés, et expose un schéma OpenAPI aligné sur ces DTOs.
 
-**Package Composer :** [`ngsoft/cronicle-client`](https://packagist.org/packages/ngsoft/cronicle-client)
+**Package Composer :** [`ngsoft/cronicle-tasks-client`](https://packagist.org/packages/ngsoft/cronicle-tasks-client)
 
 ## Prérequis
 
@@ -21,7 +21,7 @@ Il encapsule les appels HTTP via `CurlHandler`, hydrate des DTOs typés, et expo
 Via Composer :
 
 ```bash
-composer require ngsoft/cronicle-client
+composer require ngsoft/cronicle-tasks-client
 ```
 
 Développement local (clone du dépôt) :
@@ -188,7 +188,7 @@ vendor/bin/php-cs-fixer fix src
 1. Pousser le dépôt sur GitHub (`ngsoft/cronicle-client`)
 2. Tagger une version semver : `git tag v1.0.0 && git push --tags`
 3. Soumettre le dépôt sur [Packagist](https://packagist.org/packages/submit) (ou activer l’auto-update GitHub)
-4. Installer ailleurs avec : `composer require ngsoft/cronicle-client`
+4. Installer ailleurs avec : `composer require ngsoft/cronicle-tasks-client`
 
 ## Licence / références
 

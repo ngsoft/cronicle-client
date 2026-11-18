@@ -18,13 +18,14 @@ function is_dev()
  * Get script execution time.
  *
  * @param null|float $previous
- * @param int $precision
+ * @param int        $precision
  *
  * @return float
  */
 function execution_time($previous = null, $precision = 6)
 {
-    if (!isset($previous)) {
+    if ( ! isset($previous))
+    {
         $previous = constant_get('CRONICLE_APP_START');
     }
 
@@ -33,7 +34,7 @@ function execution_time($previous = null, $precision = 6)
 
 /**
  * @param null|float $previous
- * @param int $precision
+ * @param int        $precision
  *
  * @return string
  */
@@ -41,7 +42,8 @@ function formated_execution_time($previous = null, $precision = 6)
 {
     $value = execution_time($previous, $precision);
 
-    if ($value < 1.0) {
+    if ($value < 1.0)
+    {
         return sprintf('%u ms', $value * 1000);
     }
 
@@ -57,7 +59,8 @@ function formated_execution_time($previous = null, $precision = 6)
  */
 function normalize_path($path)
 {
-    if (empty($path)) {
+    if (empty($path))
+    {
         return $path;
     }
     return rtrim(str_replace(DIRECTORY_SEPARATOR, '/', $path), '/');
