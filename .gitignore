@@ -1,0 +1,16 @@
+.idea
+.vscode
+composer.lock
+vendor
+node_modules
+package-lock.json
+tmp
+var
+*.log
+build
+test
+*.cache
+
+
+/.env.*
+!/.env.example
