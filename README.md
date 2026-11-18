@@ -1,28 +1,43 @@
-# cronicle-client
+# ngsoft/cronicle-client
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![PHP Version](https://img.shields.io/badge/PHP-%3E%3D8.2-777BB4.svg)](composer.json)
 
 Client PHP pour l’[API JSON REST Cronicle](https://github.com/jhuckaby/Cronicle/blob/master/docs/APIReference.md).
 
 Il encapsule les appels HTTP via `CurlHandler`, hydrate des DTOs typés, et expose un schéma OpenAPI aligné sur ces DTOs.
 
+**Package Composer :** [`ngsoft/cronicle-client`](https://packagist.org/packages/ngsoft/cronicle-client)
+
 ## Prérequis
 
 - PHP ≥ 8.2
+- Extensions : `curl`, `json`, `mbstring`
 - Composer
 - Une instance Cronicle joignable + une clé API
 
 ## Installation
 
+Via Composer :
+
+```bash
+composer require ngsoft/cronicle-client
+```
+
+Développement local (clone du dépôt) :
+
 ```bash
 composer install
+cp .env.example .env
 ```
 
 ## Configuration
 
-Variables d’environnement (fichier `.env` / `.env.dev`) :
+Variables d’environnement (fichier `.env` / `.env.dev`, voir `.env.example`) :
 
 | Variable | Description |
 |----------|-------------|
-| `CRONICLE_BASE_URL` | URL de base du serveur Cronicle (ex. `https://host:3012`) |
+| `CRONICLE_BASE_URL` | URL de base du serveur Cronicle (ex. `http://127.0.0.1:3012`) |
 | `CRONICLE_API_KEY` | Clé API (32 caractères hex) |
 
 Exemple :
@@ -32,18 +47,24 @@ CRONICLE_BASE_URL=https://cronicle.example.com:3012
 CRONICLE_API_KEY=your_api_key_here
 ```
 
-Le bootstrap charge l’env via `lib/init.php` → `load_env()`.
+Le bootstrap charge l’env via `lib/init.php` → `load_env()`.  
+L’autoload Composer charge déjà `lib/functions.php` (helpers + `CurlHandler`).
 
 ## Utilisation rapide
 
+Avec l’autoload Composer (recommandé dans une app) :
+
 ```php
-require_once __DIR__ . '/lib/init.php';
-load_env();
+require_once __DIR__ . '/vendor/autoload.php';
 
 use NGSOFT\Cronicle\Client;
 use NGSOFT\Cronicle\Exception\CronicleException;
 
+// Option A — variables d'environnement déjà chargées
 $client = Client::fromEnv();
+
+// Option B — explicite
+$client = new Client('https://cronicle.example.com:3012', 'your_api_key');
 
 try {
     $schedule = $client->getSchedule(0, 50);
@@ -58,10 +79,13 @@ try {
 }
 ```
 
-Construction manuelle :
+Dans ce dépôt (bootstrap dotenv inclus) :
 
 ```php
-$client = new Client('https://cronicle.example.com:3012', 'your_api_key');
+require_once __DIR__ . '/lib/init.php';
+load_env();
+
+$client = Client::fromEnv();
 ```
 
 ## Méthodes du client
@@ -159,7 +183,15 @@ composer cs:fix
 vendor/bin/php-cs-fixer fix src
 ```
 
+## Publication Packagist
+
+1. Pousser le dépôt sur GitHub (`ngsoft/cronicle-client`)
+2. Tagger une version semver : `git tag v1.0.0 && git push --tags`
+3. Soumettre le dépôt sur [Packagist](https://packagist.org/packages/submit) (ou activer l’auto-update GitHub)
+4. Installer ailleurs avec : `composer require ngsoft/cronicle-client`
+
 ## Licence / références
 
+- Licence : [MIT](LICENSE)
 - Cronicle : [jhuckaby/Cronicle](https://github.com/jhuckaby/Cronicle)
 - API docs : [docs/APIReference.md](https://github.com/jhuckaby/Cronicle/blob/master/docs/APIReference.md)

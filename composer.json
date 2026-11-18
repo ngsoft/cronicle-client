@@ -1,4 +1,29 @@
 {
+  "name": "ngsoft/cronicle-client",
+  "description": "PHP HTTP client for the Cronicle JSON REST API, with typed DTOs and OpenAPI schema",
+  "type": "library",
+  "keywords": [
+    "cronicle",
+    "client",
+    "rest",
+    "api",
+    "scheduler",
+    "http",
+    "dto"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Aymeric Anger",
+      "role": "Developer",
+      "homepage": "https://github.com/ngsoft"
+    }
+  ],
+  "homepage": "https://github.com/ngsoft/cronicle-client",
+  "support": {
+    "issues": "https://github.com/ngsoft/cronicle-client/issues",
+    "source": "https://github.com/ngsoft/cronicle-client"
+  },
   "minimum-stability": "dev",
   "prefer-stable": true,
   "config": {
@@ -15,11 +40,17 @@
   },
   "require": {
     "php": ">=8.2",
+    "ext-curl": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*",
     "symfony/dotenv": "^7"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^2|^3",
     "symfony/var-dumper": "^7"
+  },
+  "suggest": {
+    "symfony/var-dumper": "Needed by examples/client-test.php (dump())"
   },
   "scripts": {
     "cs:fix": [
