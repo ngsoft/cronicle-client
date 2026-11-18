@@ -1,0 +1,1075 @@
+openapi: 3.1.0
+info:
+  title: Cronicle JSON REST API
+  description: |
+    OpenAPI schema for the Cronicle scheduler API, aligned with the PHP DTOs in
+    `NGSOFT Cronicle Dto`.
+
+    All endpoints live under `/api/app/{action}/v1`. Successful responses set
+    `code` to `0`; any other value is an error and includes `description`.
+
+    Authentication: pass an API key via `X-API-Key` header, `api_key` query
+    parameter, or `api_key` JSON body property.
+  version: 1.0.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  contact:
+    name: Cronicle
+    url: https://github.com/jhuckaby/Cronicle
+
+externalDocs:
+  description: Official Cronicle API Reference
+  url: https://github.com/jhuckaby/Cronicle/blob/master/docs/APIReference.md
+
+servers:
+  - url: '{baseUrl}'
+    description: Cronicle primary server
+    variables:
+      baseUrl:
+        default: http://127.0.0.1:3012
+
+security:
+  - ApiKeyHeader: []
+  - ApiKeyQuery: []
+
+tags:
+  - name: Schedule
+    description: Scheduled event management
+  - name: History
+    description: Completed job history
+  - name: Jobs
+    description: Active and completed jobs
+  - name: Master
+    description: Scheduler master state
+
+paths:
+  /api/app/get_schedule/v1:
+    get:
+      tags: [Schedule]
+      operationId: getSchedule
+      summary: Fetch scheduled events (paginated)
+      description: Corresponds to `Client::getSchedule()` → `ScheduleResponse`.
+      parameters:
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/ApiKeyQueryParam'
+      responses:
+        '200':
+          description: Paginated list of events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+    post:
+      tags: [Schedule]
+      operationId: getSchedulePost
+      summary: Fetch scheduled events (JSON body)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaginationRequest'
+      responses:
+        '200':
+          description: Paginated list of events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+
+  /api/app/get_event/v1:
+    get:
+      tags: [Schedule]
+      operationId: getEvent
+      summary: Fetch a single event by ID or title
+      description: Corresponds to `Client::getEvent()` → `EventResponse`.
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/EventTitle'
+        - $ref: '#/components/parameters/ApiKeyQueryParam'
+      responses:
+        '200':
+          description: Event details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+    post:
+      tags: [Schedule]
+      operationId: getEventPost
+      summary: Fetch a single event (JSON body)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetEventRequest'
+      responses:
+        '200':
+          description: Event details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+
+  /api/app/create_event/v1:
+    post:
+      tags: [Schedule]
+      operationId: createEvent
+      summary: Create a new scheduled event
+      description: |
+        Corresponds to `Client::createEvent()` → `CreateEventResponse`.
+        Requires `create_events` API key privilege.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEventRequest'
+      responses:
+        '200':
+          description: Created event ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateEventResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+
+  /api/app/update_event/v1:
+    post:
+      tags: [Schedule]
+      operationId: updateEvent
+      summary: Update an existing event
+      description: |
+        Corresponds to `Client::updateEvent()` → `ApiResponse`.
+        Requires `edit_events` API key privilege. Omitted fields are preserved.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEventRequest'
+      responses:
+        '200':
+          description: Standard success/error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+
+  /api/app/delete_event/v1:
+    post:
+      tags: [Schedule]
+      operationId: deleteEvent
+      summary: Delete an event by ID
+      description: |
+        Corresponds to `Client::deleteEvent()` → `ApiResponse`.
+        Event must have no active jobs. Requires `delete_events` privilege.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id:
+                  type: string
+                  description: Event ID to delete
+      responses:
+        '200':
+          description: Standard success/error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+
+  /api/app/get_event_history/v1:
+    get:
+      tags: [History]
+      operationId: getEventHistory
+      summary: Fetch completed job history for one event
+      description: Corresponds to `Client::getEventHistory()` → `HistoryResponse`.
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Event ID
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/ApiKeyQueryParam'
+      responses:
+        '200':
+          description: Job history rows
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+    post:
+      tags: [History]
+      operationId: getEventHistoryPost
+      summary: Fetch event history (JSON body)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/PaginationRequest'
+                - type: object
+                  required: [id]
+                  properties:
+                    id:
+                      type: string
+      responses:
+        '200':
+          description: Job history rows
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+
+  /api/app/get_history/v1:
+    get:
+      tags: [History]
+      operationId: getHistory
+      summary: Fetch completed job history for all events
+      description: Corresponds to `Client::getHistory()` → `HistoryResponse`.
+      parameters:
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/ApiKeyQueryParam'
+      responses:
+        '200':
+          description: Job history rows
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+    post:
+      tags: [History]
+      operationId: getHistoryPost
+      summary: Fetch global history (JSON body)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaginationRequest'
+      responses:
+        '200':
+          description: Job history rows
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+
+  /api/app/run_event/v1:
+    get:
+      tags: [Jobs]
+      operationId: runEvent
+      summary: Run an event on demand
+      description: |
+        Corresponds to `Client::runEvent()` → `RunEventResponse`.
+        Requires `run_events` privilege.
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/EventTitle'
+        - $ref: '#/components/parameters/ApiKeyQueryParam'
+      responses:
+        '200':
+          description: Launched job IDs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunEventResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+    post:
+      tags: [Jobs]
+      operationId: runEventPost
+      summary: Run an event on demand (with overrides)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunEventRequest'
+      responses:
+        '200':
+          description: Launched job IDs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunEventResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+
+  /api/app/get_job_status/v1:
+    get:
+      tags: [Jobs]
+      operationId: getJobStatus
+      summary: Fetch status for a job
+      description: Corresponds to `Client::getJobStatus()` → `JobStatusResponse`.
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Job ID
+        - $ref: '#/components/parameters/ApiKeyQueryParam'
+      responses:
+        '200':
+          description: Job status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatusResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+    post:
+      tags: [Jobs]
+      operationId: getJobStatusPost
+      summary: Fetch job status (JSON body)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id:
+                  type: string
+      responses:
+        '200':
+          description: Job status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatusResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+
+  /api/app/get_active_jobs/v1:
+    get:
+      tags: [Jobs]
+      operationId: getActiveJobs
+      summary: Fetch all active jobs
+      description: Corresponds to `Client::getActiveJobs()` → `ActiveJobsResponse`.
+      parameters:
+        - $ref: '#/components/parameters/ApiKeyQueryParam'
+      responses:
+        '200':
+          description: Map of active jobs keyed by job ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActiveJobsResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+    post:
+      tags: [Jobs]
+      operationId: getActiveJobsPost
+      summary: Fetch all active jobs (POST)
+      responses:
+        '200':
+          description: Map of active jobs keyed by job ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActiveJobsResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+
+  /api/app/update_job/v1:
+    post:
+      tags: [Jobs]
+      operationId: updateJob
+      summary: Update a running job
+      description: |
+        Corresponds to `Client::updateJob()` → `ApiResponse`.
+        Requires `edit_events` privilege.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateJobRequest'
+      responses:
+        '200':
+          description: Standard success/error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+
+  /api/app/abort_job/v1:
+    post:
+      tags: [Jobs]
+      operationId: abortJob
+      summary: Abort a running job
+      description: |
+        Corresponds to `Client::abortJob()` → `ApiResponse`.
+        Requires `abort_events` privilege.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id:
+                  type: string
+                  description: Job ID to abort
+      responses:
+        '200':
+          description: Standard success/error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+
+  /api/app/get_master_state/v1:
+    get:
+      tags: [Master]
+      operationId: getMasterState
+      summary: Fetch master application state
+      description: Corresponds to `Client::getMasterState()` → `MasterStateResponse`.
+      parameters:
+        - $ref: '#/components/parameters/ApiKeyQueryParam'
+      responses:
+        '200':
+          description: Scheduler state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MasterStateResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+    post:
+      tags: [Master]
+      operationId: getMasterStatePost
+      summary: Fetch master state (POST)
+      responses:
+        '200':
+          description: Scheduler state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MasterStateResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+
+  /api/app/update_master_state/v1:
+    post:
+      tags: [Master]
+      operationId: updateMasterState
+      summary: Enable or disable the scheduler
+      description: |
+        Corresponds to `Client::updateMasterState()` → `ApiResponse`.
+        Requires `state_update` privilege.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enabled]
+              properties:
+                enabled:
+                  $ref: '#/components/schemas/Flag'
+      responses:
+        '200':
+          description: Standard success/error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '4XX':
+          $ref: '#/components/responses/ApiError'
+
+components:
+  responses:
+    ApiError:
+      description: |
+        Application or transport error.
+        Cronicle usually still returns HTTP 200 with `code` != 0 and a `description`,
+        but clients may also surface HTTP 4XX for auth / bad requests.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+
+  securitySchemes:
+    ApiKeyHeader:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: 32-character hexadecimal API key
+    ApiKeyQuery:
+      type: apiKey
+      in: query
+      name: api_key
+
+  parameters:
+    ApiKeyQueryParam:
+      name: api_key
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Optional API key (alternative to X-API-Key header)
+    Offset:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+      description: Offset into the result set
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 50
+      description: Number of records to return
+    EventId:
+      name: id
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Event ID
+    EventTitle:
+      name: title
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Exact event title (case-sensitive)
+
+  schemas:
+    # --- scalar helpers ---
+    Flag:
+      description: |
+        Cronicle boolean flag. API returns/accepts `0`/`1`, `true`/`false`,
+        or omit. Maps to DTO `null|bool|int` properties.
+      oneOf:
+        - type: integer
+          enum: [0, 1]
+        - type: boolean
+      examples: [0, 1, true, false]
+
+    ApiCode:
+      description: Response code — `0` on success, any other value on error
+      oneOf:
+        - type: integer
+        - type: string
+      examples: [0, session]
+
+    # --- domain DTOs (NGSOFT Cronicle Dto) ---
+    EventTiming:
+      type: object
+      description: |
+        Cron-like timing object (`NGSOFT Cronicle Dto/EventTiming`).
+        Omitted properties mean "all" (like `*` in cron).
+      properties:
+        years:
+          type: array
+          items:
+            type: integer
+          description: Years in YYYY format
+        months:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 12
+          description: Months (1=January … 12=December)
+        days:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 31
+          description: Days of month
+        weekdays:
+          type: array
+          items:
+            type: integer
+            minimum: 0
+            maximum: 6
+          description: Weekdays (0=Sunday … 6=Saturday)
+        hours:
+          type: array
+          items:
+            type: integer
+            minimum: 0
+            maximum: 23
+          description: Hours in 24-hour time
+        minutes:
+          type: array
+          items:
+            type: integer
+            minimum: 0
+            maximum: 59
+          description: Minutes
+      examples:
+        - minutes: [0]
+        - hours: [4, 16]
+          minutes: [30]
+
+    Event:
+      type: object
+      description: Cronicle event data object (`NGSOFT Cronicle Dto/Event`)
+
+      properties:
+        id:
+          type: string
+          description: Unique event ID (assigned on create)
+        title:
+          type: string
+          description: Display name
+        category:
+          type: string
+          description: Category ID
+        plugin:
+          type: string
+          description: Plugin ID
+        target:
+          type: string
+          description: Server group ID or hostname
+        algo:
+          type: string
+          description: Server pick algorithm within a group
+        api_key:
+          type: string
+          description: API key that created the event (if via API)
+        timezone:
+          type: string
+          description: IANA timezone string
+          examples: [Europe/Paris, America/New_York]
+        username:
+          type: string
+          description: Username of the creator (UI)
+        notes:
+          type: string
+        notify_success:
+          type: string
+          description: CSV e-mail recipients on success
+        notify_fail:
+          type: string
+          description: CSV e-mail recipients on failure
+        web_hook:
+          type: string
+          format: uri
+          description: URL pinged at job start/end
+        chain:
+          type: string
+          description: Event ID to launch on success
+        chain_error:
+          type: string
+          description: Event ID to launch on failure
+        enabled:
+          $ref: '#/components/schemas/Flag'
+        catch_up:
+          $ref: '#/components/schemas/Flag'
+        detached:
+          $ref: '#/components/schemas/Flag'
+        multiplex:
+          $ref: '#/components/schemas/Flag'
+        queue:
+          $ref: '#/components/schemas/Flag'
+        created:
+          type: integer
+          description: Creation time (Unix epoch seconds)
+        modified:
+          type: integer
+          description: Last modification time (Unix epoch seconds)
+        timeout:
+          type: integer
+          description: Max job run time in seconds
+        retries:
+          type: integer
+        retry_delay:
+          type: integer
+          description: Seconds between retries
+        max_children:
+          type: integer
+          description: Max concurrent jobs
+        stagger:
+          type: integer
+          description: Seconds between multiplex launches
+        queue_max:
+          type: integer
+        cpu_limit:
+          type: integer
+          description: CPU limit (100 = 1 core)
+        cpu_sustain:
+          type: integer
+          description: Seconds over CPU limit before abort
+        memory_limit:
+          type: integer
+          description: Memory limit in bytes
+        memory_sustain:
+          type: integer
+        log_max_size:
+          type: integer
+          description: Max job log size in bytes
+        params:
+          type: object
+          additionalProperties: true
+          description: Plugin-specific parameters
+        timing:
+          $ref: '#/components/schemas/EventTiming'
+
+    ResourceStats:
+      type: object
+      description: CPU or memory usage stats (`NGSOFT Cronicle Dto/ResourceStats`)
+
+      properties:
+        min:
+          type: number
+        max:
+          type: number
+        total:
+          type: number
+        count:
+          type: integer
+        current:
+          type: number
+
+    Job:
+      allOf:
+        - $ref: '#/components/schemas/Event'
+        - type: object
+          description: Job status object (`NGSOFT Cronicle Dto/Job`)
+
+          properties:
+            hostname:
+              type: string
+              description: Server that ran / is running the job
+            source:
+              type: string
+              description: Who started the job (manual/API)
+            log_file:
+              type: string
+              description: Local path to the job log file
+            command:
+              type: string
+            event:
+              type: string
+              description: Parent event ID
+            event_title:
+              type: string
+            plugin_title:
+              type: string
+            category_title:
+              type: string
+            nice_target:
+              type: string
+            perf:
+              type: string
+              description: Performance metrics string from the plugin
+            description:
+              type: string
+              description: Job result / error message
+            pid:
+              type: integer
+            now:
+              type: integer
+              description: Current epoch at sample time
+            log_file_size:
+              type: integer
+            complete:
+              $ref: '#/components/schemas/Flag'
+            code:
+              description: Job result code (`0` = success)
+              oneOf:
+                - type: integer
+                - type: string
+            progress:
+              type: number
+              minimum: 0
+              maximum: 1
+            time_start:
+              type: number
+              description: Start time (Unix epoch, may be fractional)
+            time_end:
+              type: number
+            elapsed:
+              type: number
+              description: Elapsed seconds
+            cpu:
+              $ref: '#/components/schemas/ResourceStats'
+            mem:
+              $ref: '#/components/schemas/ResourceStats'
+
+    ListMeta:
+      type: object
+      description: List / pagination metadata (`NGSOFT Cronicle Dto/ListMeta`)
+
+      properties:
+        page_size:
+          type: integer
+        first_page:
+          type: integer
+        last_page:
+          type: integer
+        length:
+          type: integer
+          description: Total number of items regardless of offset/limit
+        type:
+          type: string
+          examples: [list]
+
+    MasterState:
+      type: object
+      description: Scheduler master state (`NGSOFT Cronicle Dto/MasterState`)
+
+      properties:
+        enabled:
+          $ref: '#/components/schemas/Flag'
+      additionalProperties: true
+
+    # --- response DTOs (NGSOFT Cronicle Dto/Response) ---
+    ApiResponse:
+      type: object
+      description: Standard response envelope (`NGSOFT Cronicle Dto/Response/ApiResponse`)
+
+      required: [code]
+      properties:
+        code:
+          $ref: '#/components/schemas/ApiCode'
+        description:
+          type: string
+          description: Error message when code ≠ 0
+
+    ScheduleResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          description: NGSOFT Cronicle Dto/Response/ScheduleResponse
+
+          properties:
+            rows:
+              type: array
+              items:
+                $ref: '#/components/schemas/Event'
+            list:
+              $ref: '#/components/schemas/ListMeta'
+
+    EventResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          description: NGSOFT Cronicle Dto/Response/EventResponse
+
+          properties:
+            event:
+              $ref: '#/components/schemas/Event'
+            queue:
+              type: integer
+              description: Queued jobs count when Allow Queued Jobs is enabled
+            jobs:
+              type: array
+              items:
+                $ref: '#/components/schemas/Job'
+              description: Active jobs for this event
+
+    CreateEventResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          description: NGSOFT Cronicle Dto/Response/CreateEventResponse
+
+          properties:
+            id:
+              type: string
+              description: ID of the newly created event
+
+    HistoryResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          description: NGSOFT Cronicle Dto/Response/HistoryResponse
+
+          properties:
+            rows:
+              type: array
+              items:
+                $ref: '#/components/schemas/Job'
+            list:
+              $ref: '#/components/schemas/ListMeta'
+
+    RunEventResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          description: NGSOFT Cronicle Dto/Response/RunEventResponse
+
+          properties:
+            ids:
+              type: array
+              items:
+                type: string
+              description: Launched job IDs
+            queue:
+              type: integer
+
+    JobStatusResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          description: NGSOFT Cronicle Dto/Response/JobStatusResponse
+
+          properties:
+            job:
+              $ref: '#/components/schemas/Job'
+
+    ActiveJobsResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          description: NGSOFT Cronicle Dto/Response/ActiveJobsResponse
+
+          properties:
+            jobs:
+              type: object
+              additionalProperties:
+                $ref: '#/components/schemas/Job'
+              description: Active jobs keyed by job ID
+
+    MasterStateResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          description: NGSOFT Cronicle Dto/Response/MasterStateResponse
+
+          properties:
+            state:
+              $ref: '#/components/schemas/MasterState'
+
+    # --- request bodies ---
+    PaginationRequest:
+      type: object
+      properties:
+        offset:
+          type: integer
+          minimum: 0
+          default: 0
+        limit:
+          type: integer
+          minimum: 1
+          default: 50
+        api_key:
+          type: string
+
+    GetEventRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        api_key:
+          type: string
+      description: Provide either `id` or exact `title`
+
+    CreateEventRequest:
+      allOf:
+        - $ref: '#/components/schemas/Event'
+        - type: object
+          required: [title, enabled, category, plugin, target]
+
+    UpdateEventRequest:
+      allOf:
+        - $ref: '#/components/schemas/Event'
+        - type: object
+          required: [id]
+          properties:
+            reset_cursor:
+              type: integer
+              description: Reset event clock to this Unix epoch
+            abort_jobs:
+              allOf:
+                - $ref: '#/components/schemas/Flag'
+              description: Abort running jobs when disabling the event
+
+    RunEventRequest:
+      allOf:
+        - $ref: '#/components/schemas/Event'
+        - type: object
+          properties:
+            id:
+              type: string
+            title:
+              type: string
+          description: Provide either `id` or exact `title`; other fields override the event for this run
+
+    UpdateJobRequest:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        timeout:
+          type: integer
+        retries:
+          type: integer
+        retry_delay:
+          type: integer
+        chain:
+          type: string
+        chain_error:
+          type: string
+        notify_success:
+          type: string
+        notify_fail:
+          type: string
+        web_hook:
+          type: string
+        cpu_limit:
+          type: integer
+        cpu_sustain:
+          type: integer
+        memory_limit:
+          type: integer
+        memory_sustain:
+          type: integer
+        log_max_size:
+          type: integer

@@ -8,9 +8,9 @@
     "platform-check": false
   },
   "autoload": {
-    "files": ["lib/libs-no-sql-php82.php"],
+    "files": ["lib/functions.php"],
     "psr-4": {
-      "": "src/"
+      "NGSOFT\\": "src/"
     }
   },
   "require": {
@@ -18,9 +18,10 @@
     "symfony/dotenv": "^7"
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "^2|^3"
+    "friendsofphp/php-cs-fixer": "^2|^3",
+    "symfony/var-dumper": "^7"
   },
-  "script": {
+  "scripts": {
     "cs:fix": [
       "Composer\\Config::disableProcessTimeout",
       "php8.2 vendor/bin/php-cs-fixer fix src"
